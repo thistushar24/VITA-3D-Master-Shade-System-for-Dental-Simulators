@@ -1,0 +1,92 @@
+{
+    "patient_id": "VEAVRKX3",
+    "jaw": "lower",
+    "vertex_count": 111495,
+    "triangle_count": 222890,
+    "teeth": {
+        "43": {
+            "instance_id": 1,
+            "vertex_count": 4063,
+            "triangle_count": 7732,
+            "file": "tooth_43.obj"
+        },
+        "34": {
+            "instance_id": 2,
+            "vertex_count": 3354,
+            "triangle_count": 6362,
+            "file": "tooth_34.obj"
+        },
+        "33": {
+            "instance_id": 3,
+            "vertex_count": 3638,
+            "triangle_count": 6938,
+            "file": "tooth_33.obj"
+        },
+        "32": {
+            "instance_id": 4,
+            "vertex_count": 3289,
+            "triangle_count": 6230,
+            "file": "tooth_32.obj"
+        },
+        "31": {
+            "instance_id": 5,
+            "vertex_count": 3194,
+            "triangle_count": 5986,
+            "file": "tooth_31.obj"
+        },
+        "42": {
+            "instance_id": 6,
+            "vertex_count": 3451,
+            "triangle_count": 6522,
+            "file": "tooth_42.obj"
+        },
+        "45": {
+            "instance_id": 7,
+            "vertex_count": 4814,
+            "triangle_count": 9250,
+            "file": "tooth_45.obj"
+        },
+        "41": {
+            "instance_id": 8,
+            "vertex_count": 3241,
+            "triangle_count": 6060,
+            "file": "tooth_41.obj"
+        },
+        "35": {
+            "instance_id": 9,
+            "vertex_count": 4370,
+            "triangle_count": 8360,
+            "file": "tooth_35.obj"
+        },
+        "36": {
+            "instance_id": 10,
+            "vertex_count": 8565,
+            "triangle_count": 16660,
+            "file": "tooth_36.obj"
+        },
+        "47": {
+            "instance_id": 11,
+            "vertex_count": 7459,
+            "triangle_count": 14644,
+            "file": "tooth_47.obj"
+        },
+        "46": {
+            "instance_id": 12,
+            "vertex_count": 8334,
+            "triangle_count": 16198,
+            "file": "tooth_46.obj"
+        },
+        "44": {
+            "instance_id": 13,
+            "vertex_count": 3854,
+            "triangle_count": 7322,
+            "file": "tooth_44.obj"
+        },
+        "37": {
+            "instance_id": 14,
+            "vertex_count": 7713,
+            "triangle_count": 15113,
+            "file": "tooth_37.obj"
+        }
+    }
+}

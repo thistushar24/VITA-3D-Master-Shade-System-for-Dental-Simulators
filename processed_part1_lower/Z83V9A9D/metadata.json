@@ -1,0 +1,68 @@
+{
+    "patient_id": "Z83V9A9D",
+    "jaw": "lower",
+    "vertex_count": 78971,
+    "triangle_count": 157862,
+    "teeth": {
+        "31": {
+            "instance_id": 1,
+            "vertex_count": 4084,
+            "triangle_count": 7780,
+            "file": "tooth_31.obj"
+        },
+        "42": {
+            "instance_id": 2,
+            "vertex_count": 4203,
+            "triangle_count": 8168,
+            "file": "tooth_42.obj"
+        },
+        "41": {
+            "instance_id": 3,
+            "vertex_count": 3766,
+            "triangle_count": 7200,
+            "file": "tooth_41.obj"
+        },
+        "44": {
+            "instance_id": 4,
+            "vertex_count": 4523,
+            "triangle_count": 8768,
+            "file": "tooth_44.obj"
+        },
+        "36": {
+            "instance_id": 5,
+            "vertex_count": 8250,
+            "triangle_count": 16060,
+            "file": "tooth_36.obj"
+        },
+        "32": {
+            "instance_id": 6,
+            "vertex_count": 5024,
+            "triangle_count": 9780,
+            "file": "tooth_32.obj"
+        },
+        "45": {
+            "instance_id": 7,
+            "vertex_count": 5095,
+            "triangle_count": 9838,
+            "file": "tooth_45.obj"
+        },
+        "46": {
+            "instance_id": 8,
+            "vertex_count": 9852,
+            "triangle_count": 19266,
+            "file": "tooth_46.obj"
+        },
+        "34": {
+            "instance_id": 9,
+            "vertex_count": 501,
+            "triangle_count": 884,
+            "file": "tooth_34.obj"
+        },
+        "35": {
+            "instance_id": 10,
+            "vertex_count": 418,
+            "triangle_count": 712,
+            "file": "tooth_35.obj"
+        }
+    }
+}
