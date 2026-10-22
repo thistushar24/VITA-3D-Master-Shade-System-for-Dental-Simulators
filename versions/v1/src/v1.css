@@ -1,0 +1,5 @@
+.badge { display:inline-block; padding:1px 8px; border-radius:10px; font-size:12px; border:1px solid var(--line) }
+.badge.warn { border-color:var(--warn); color:var(--warn) }
+.stage canvas { touch-action:none }
+table.rank td:first-child { font-family:ui-monospace,monospace }
+.zoomwrap { overflow:auto; max-height:70vh; border:1px solid var(--line) }
