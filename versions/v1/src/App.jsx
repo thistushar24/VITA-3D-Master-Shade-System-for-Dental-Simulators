@@ -63,17 +63,17 @@ export default function App() {
 
   // ---------------- stage 1: upload
   const upload = (which) => (f) => f && guard('Uploading…', async () => {
-    const r = await v1.uploadImage(f)
-    const p = { ...r, url: URL.createObjectURL(f) }
+    const r = await v1.uploadImage(f, which)
+    const p = { ...r, url: URL.createObjectURL(r.blob || f) } // r.blob = the (possibly downscaled) image the coordinates refer to
     which === 'A' ? setPhotoA(p) : setPhotoB(p)
     if (which === 'A') demoCanines.current = null
     setSession(null); setReg(null); setMesh(null)
   })
   const demo = () => guard('Loading demo…', async () => {
-    for (const [n, set] of [['demo_photo_a.png', setPhotoA], ['demo_photo_b.png', setPhotoB]]) {
+    for (const [n, set, role] of [['demo_photo_a.png', setPhotoA, 'A'], ['demo_photo_b.png', setPhotoB, 'B']]) {
       const blob = await v1.sample(n)
-      const r = await v1.uploadImage(new File([blob], n, { type: 'image/png' }))
-      set({ ...r, url: URL.createObjectURL(blob) })
+      const r = await v1.uploadImage(new File([blob], n, { type: 'image/png' }), role)
+      set({ ...r, url: URL.createObjectURL(r.blob || blob) })
     }
     demoCanines.current = JSON.parse(await (await v1.sample('demo_annotations.json')).text()).canines
     setSession(null); setReg(null); setMesh(null)

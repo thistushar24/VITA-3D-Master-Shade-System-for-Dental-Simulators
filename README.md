@@ -4,7 +4,7 @@ Fit a 3D dental arch template to a frontal photograph of the teeth, view the two
 alignment. **The 3D model is a template/prior. One photograph cannot determine a patient's real tooth geometry, so results
 are "fitted/estimated", never a reconstruction of the patient's anatomy, and nothing here is for diagnosis or treatment.**
 
-> **New: [versions/v1](versions/v1/README.md)** — automated smile-simulation demo (Photo A + Photo B, automatic model selection, 3D editing with versions, Photo B simulation, export) and Render deployment. The rest of this README documents the underlying registration workbench.
+> **New: [versions/v1](versions/v1/README.md)** — automated smile-simulation demo (Photo A + Photo B, automatic model selection, 3D editing with versions, Photo B simulation, export) and Render / Vercel deployment. The rest of this README documents the underlying registration workbench.
 
 ## What was found when inspecting the inputs (read this first)
 

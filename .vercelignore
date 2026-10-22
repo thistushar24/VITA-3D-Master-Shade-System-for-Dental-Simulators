@@ -1,0 +1,8 @@
+.venv
+private_data
+**/node_modules
+versions/v1/dist
+backend/storage
+.pytest_cache
+processed_part1_upper
+processed_part1_lower

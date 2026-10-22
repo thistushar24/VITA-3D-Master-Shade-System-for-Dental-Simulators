@@ -20,21 +20,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from . import core, library
+from . import stateless as stateless_mod
 from . import v1 as v1mod
 from .core import InputError, Pose, RegConfig
 
 ROOT = Path(__file__).resolve().parents[2]
-STORAGE = Path(os.environ.get("DENTAL_STORAGE", ROOT / "backend" / "storage"))
+ON_VERCEL = bool(os.environ.get("VERCEL"))  # deployment filesystem is read-only except /tmp, which is per-instance and not durable
+STORAGE = Path(os.environ.get("DENTAL_STORAGE", "/tmp/dental-storage" if ON_VERCEL else ROOT / "backend" / "storage"))
 MODEL_ROOTS = [Path(p) for p in os.environ.get("DENTAL_MODEL_ROOTS", str(ROOT / "data" / "samples")).split(os.pathsep)]
 LIB_DIR = lambda: Path(os.environ.get("DENTAL_LIBRARY_DIR", ROOT / "data" / "demo_library"))
-MAX_IMAGE_BYTES = int(os.environ.get("DENTAL_MAX_IMAGE_MB", 20)) * 2**20
+MAX_IMAGE_BYTES = int(float(os.environ.get("DENTAL_MAX_IMAGE_MB", 4 if ON_VERCEL else 20)) * 2**20)  # Vercel caps request bodies at 4.5 MB
 MAX_MESH_BYTES = int(os.environ.get("DENTAL_MAX_MESH_MB", 100)) * 2**20
 TTL_SECONDS = 24 * 3600
 SCHEMA_VERSION = "dental-alignment/1"
 
 app = FastAPI(title="Dental 2D-3D registration", version="0.1")
-app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("DENTAL_CORS", "http://localhost:5173").split(","),
-                   allow_methods=["*"], allow_headers=["*"])
+# CORS: explicit origins via DENTAL_CORS (comma list); optional DENTAL_CORS_REGEX for e.g. Vercel preview URLs. No credentials.
+app.add_middleware(CORSMiddleware, allow_origins=[o for o in os.environ.get("DENTAL_CORS", "http://localhost:5173,http://localhost:5174").split(",") if o],
+                   allow_origin_regex=os.environ.get("DENTAL_CORS_REGEX") or None, allow_methods=["*"], allow_headers=["*"])
 
 REGS: dict[str, dict] = {}
 IMAGES: dict[str, dict] = {}
@@ -118,7 +121,7 @@ def _arch(model_id: str) -> core.Arch:
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "version": app.version}
+    return {"ok": True, "version": app.version, "runtime": "vercel" if ON_VERCEL else "standalone"}
 
 
 @app.get("/api/models")
@@ -392,8 +395,16 @@ app.include_router(v1mod.make_router(
     create_reg=lambda body: create_registration(body), auto_align=lambda i, body: auto_align(i, body),
     set_transform=lambda i, body: set_transform(i, body), get_reg=lambda i: get_registration(i)))
 
+app.include_router(stateless_mod.make_router(
+    load_arch=lambda mid: _arch(mid), lib_dir=LIB_DIR, read_limited=_read_limited, max_image_bytes=MAX_IMAGE_BYTES))
+
 # Single-service deployment: serve the built v1 demo UI when present (see render.yaml). API routes win over static.
-_DIST = ROOT / "versions" / "v1" / "dist"
+# Otherwise (API-only deployment, e.g. a separate Vercel project) GET / returns a small service description.
+_DIST = Path(os.environ.get("DENTAL_UI_DIR", ROOT / "versions" / "v1" / "dist"))
 if _DIST.is_dir():
     from fastapi.staticfiles import StaticFiles
     app.mount("/", StaticFiles(directory=_DIST, html=True), name="v1-ui")
+else:
+    @app.get("/", include_in_schema=False)
+    def root_info():
+        return {"ok": True, "service": "dental-reg api", "health": "/api/health", "catalogue": "/api/v1/catalogue", "docs": "/docs"}

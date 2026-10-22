@@ -384,3 +384,76 @@ def test_canine_estimate_geometry():
     (l, r), _ = vision.estimate_canines(m)
     assert abs(l[0] - (500 - 0.33 * 800)) < 2 and abs(r[0] - (500 + 0.33 * 800)) < 2
     assert 140 < l[1] < 160 and l[0] < r[0]  # patient's right (image-left) first
+
+
+# ---- stateless API (serverless hosting)
+def test_stateless_journey_and_errors(client, K):
+    from dental_reg import library
+    cat = library.load_catalogue(LIB)
+    up = [e for e in cat if e["jaw"] == "upper"]
+    src = library.load_arch_npz(LIB / up[3]["file"])
+    base = core.initial_pose(src, W, H, K)
+    gt = Pose((Rot.from_euler("xyz", [3, 5, 2], degrees=True) * Rot.from_rotvec(base.rvec)).as_rotvec(), base.t + [4, -3, 6], 1.0, base.center)
+    photo, _ = render(src, gt, K, W, H, tooth=(170, 215, 240), bg=(40, 30, 150))
+    a = client.post("/api/v1/stateless/analyse", files={"file": ("a.png", _png(photo))}).json()
+    assert (a["width"], a["height"]) == (W, H) and a["analysis"]["mask_polygons"] and len(a["analysis"]["canines"]) == 2
+    can = core.project(np.array([src.teeth[13], src.teeth[23]]), gt, K)[0].tolist()
+    body = {"width": W, "height": H, "canines": can, "mask_polygons": a["analysis"]["mask_polygons"], "fov_deg": 40}
+    m = client.post("/api/v1/stateless/match", json=body).json()
+    assert m["model_id"] == "lib:" + m["match"]["selected"] and m["registration"]["pose"]["model_to_camera"]
+    assert m["registration"]["report"]["metrics"]["silhouette_iou"] > 0.5
+    # same input -> same output (no hidden state)
+    m2 = client.post("/api/v1/stateless/match", json=body).json()
+    assert m2["match"]["selected"] == m["match"]["selected"] and m2["match"]["ranked"][0]["final"] == m["match"]["ranked"][0]["final"]
+    # user-chosen model, then a manual transform with a tooth edit; metrics recomputed from the supplied annotations
+    other = next(e["id"] for e in up if "lib:" + e["id"] != m["model_id"])
+    pl = client.post("/api/v1/stateless/place", json=body | {"model_id": other}).json()
+    assert pl["registration"]["model"]["id"] == "lib:" + other
+    pose = pl["registration"]["pose"]; pose["t"][0] += 2.0
+    tr = client.post("/api/v1/stateless/transform", json={"registration": pl["registration"], "pose": pose,
+                                                          "tooth_offsets": {"11": {"t": [0.4, 0, 0]}}}).json()["registration"]
+    assert tr["mode"] == "manual" and tr["tooth_offsets"] == {"11": {"t": [0.4, 0, 0]}} and "landmark_rmse_px" in tr["report"]["metrics"]
+    # errors
+    assert client.post("/api/v1/stateless/analyse", files={"file": ("a.png", b"junk")}).status_code == 400
+    assert client.post("/api/v1/stateless/match", json={"width": W}).status_code == 400
+    assert client.post("/api/v1/stateless/match", json=body | {"canines": [[-5, 1], [2, 2]]}).status_code == 400
+    assert client.post("/api/v1/stateless/match", json=body | {"mask_polygons": []}).status_code == 400
+    assert client.post("/api/v1/stateless/place", json=body | {"model_id": "../../x"}).status_code == 400
+    assert client.post("/api/v1/stateless/transform", json={"registration": {}}).status_code == 400
+    assert client.post("/api/v1/stateless/transform", json={"registration": pl["registration"], "tooth_offsets": {"99": {}}}).status_code == 400
+    # nothing was written for server-side sessions/registrations
+    from dental_reg import app as appmod
+    assert not list(appmod.STORAGE.glob("session_*")) and not list(appmod.STORAGE.glob("reg_*"))
+
+
+def test_cors_and_vercel_storage_defaults(client):
+    r = client.options("/api/health", headers={"Origin": "http://localhost:5174", "Access-Control-Request-Method": "GET"})
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:5174"
+    r = client.options("/api/health", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "GET"})
+    assert "access-control-allow-origin" not in r.headers
+    import importlib, os
+    from dental_reg import app as appmod
+    old = dict(os.environ)
+    try:
+        os.environ["VERCEL"] = "1"; os.environ.pop("DENTAL_STORAGE", None); os.environ.pop("DENTAL_MAX_IMAGE_MB", None)
+        mod = importlib.reload(appmod)
+        assert str(mod.STORAGE) == "/tmp/dental-storage" and mod.MAX_IMAGE_BYTES == 4 * 2**20
+    finally:
+        os.environ.clear(); os.environ.update(old); importlib.reload(appmod)
+
+
+def test_root_serves_ui_when_present_else_api_info(tmp_path):
+    """Regression: an API info route at '/' must not shadow the mounted UI."""
+    import importlib, os
+    from dental_reg import app as appmod
+    ui = tmp_path / "ui"; ui.mkdir(); (ui / "index.html").write_text("<html>UI</html>")
+    old = dict(os.environ)
+    try:
+        os.environ["DENTAL_UI_DIR"] = str(ui)
+        with TestClient(importlib.reload(appmod).app) as c:
+            assert "UI" in c.get("/").text and c.get("/api/health").json()["ok"]
+        os.environ["DENTAL_UI_DIR"] = str(tmp_path / "missing")
+        with TestClient(importlib.reload(appmod).app) as c:
+            assert c.get("/").json()["service"] == "dental-reg api"
+    finally:
+        os.environ.clear(); os.environ.update(old); importlib.reload(appmod)
