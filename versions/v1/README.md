@@ -99,9 +99,15 @@ Steps: (1) import the repo, branch `release/v1-vercel`, Root Directory `.` → d
 
 Limits that shaped the design (from Vercel docs, checked 2026-10): request/response body **4.5 MB** (so Photo A is downscaled in the browser
 to ≤1600 px before upload; Photo B never leaves the browser; the API rejects >4 MB with a clear error); function filesystem is read-only
-except per-instance `/tmp` (the API writes nothing it needs later in stateless mode); Python bundle limit 500 MB (dependencies measure
-≈284 MB + 2 MB code/models); 2 GB memory and 300 s default duration (a match takes ≈3-6 s; first request after idle also pays the
+except per-instance `/tmp` (the API writes nothing it needs later in stateless mode); Python bundle limit 500 MB (a local `vercel` CLI build with Linux wheels measured **325 MB**, above the 250 MB
+"standard" size, so Vercel switches to *runtime dependency installation* - expect slower cold starts; not yet confirmed on the platform since no
+deployment was possible); 2 GB memory and 300 s default duration (a match takes ≈3-6 s; first request after idle also pays the
 import/cold-start cost).
 Consequences: closing the tab loses the session (the UI offers PNG/JPEG export; there is no server-side save); the 20 procedural arches
 are the only models (licence-clean). To add durable server-side sessions on Vercel you would need an external store (e.g. Vercel Blob for
 photos + a KV/Postgres for session JSON; both have free tiers but need an account and configuration) - not implemented.
+
+**Status of this deployment path:** configuration validated against Vercel's published `vercel.json` schema; the API runs locally with `VERCEL=1` from the repo
+root exactly as Vercel would start it, and the stateless UI was tested against it cross-origin (see the test notes in the project hand-off). **It has not been
+deployed to Vercel**: this environment has no Vercel login or token (`vercel whoami` → logged out) and an anonymous `vercel deploy --temporary` was rejected with
+"Not authorized". Run the steps above from an authenticated account.
