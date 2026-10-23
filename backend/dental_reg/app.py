@@ -36,8 +36,8 @@ SCHEMA_VERSION = "dental-alignment/1"
 
 app = FastAPI(title="Dental 2D-3D registration", version="0.1")
 # CORS: explicit origins via DENTAL_CORS (comma list); optional DENTAL_CORS_REGEX for e.g. Vercel preview URLs. No credentials.
-app.add_middleware(CORSMiddleware, allow_origins=[o for o in os.environ.get("DENTAL_CORS", "http://localhost:5173,http://localhost:5174").split(",") if o],
-                   allow_origin_regex=os.environ.get("DENTAL_CORS_REGEX") or None, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"],
+                   allow_origin_regex=r"https://.*\.vercel\.app", allow_methods=["*"], allow_headers=["*"])
 
 REGS: dict[str, dict] = {}
 IMAGES: dict[str, dict] = {}
