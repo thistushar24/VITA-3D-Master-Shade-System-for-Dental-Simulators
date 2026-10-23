@@ -77,3 +77,37 @@ Service, Runtime *Docker*, health check path `/api/health`). No secrets are need
 container binds `0.0.0.0:$PORT`. UI and API share one origin, so no CORS or API URL setup is required. The Docker build was **not
 executed** during development (no Docker daemon); equivalent steps (clean `npm ci && vite build`, fresh pinned venv, server started
 from the copied layout) were run instead.
+
+## Deploy on Vercel (two projects from this repo)
+
+Vercel runs Python as short-lived serverless functions, so the demo runs there in **stateless mode**: the browser keeps the session
+(photos, annotations, versions, placements) and the API only computes (`/api/v1/stateless/{analyse,match,place,transform}`, plus the
+read-only `/api/v1/catalogue`, `/api/models/lib/<id>/mesh`, `/api/samples/*`, `/api/health`). No database or object storage is needed and no
+paid service is involved. The stateful API (`/api/v1/sessions…`, server-side sessions) is unchanged and remains the mode for local/Docker/Render.
+
+| | API project | UI project |
+|---|---|---|
+| Root Directory | repo root (`.`) | `versions/v1` |
+| Framework | FastAPI/Python (auto; `app.py` exposes `app`, `requirements.txt`, `.python-version` = 3.12) | Vite (auto; `versions/v1/vercel.json`) |
+| Build | none (dependencies only) | `npm ci && npm run build` → `dist` |
+| Env vars | `DENTAL_CORS=https://<ui>.vercel.app` (and optionally `DENTAL_CORS_REGEX=https://<project>-.*\.vercel\.app` for previews) | `VITE_API_BASE=https://<api>.vercel.app` (no trailing slash). `VITE_API_MODE=stateless` is set by `vercel.json` |
+| Other setting | none | keep **"Include source files outside of the Root Directory in the Build Step"** enabled (shared code is in `frontend/src`) |
+
+Steps: (1) import the repo, branch `release/v1-vercel`, Root Directory `.` → deploy → note the URL, open `<url>/api/health`;
+(2) import the same repo again, Root Directory `versions/v1`, set `VITE_API_BASE` to the API URL → deploy;
+(3) set `DENTAL_CORS` on the API project to the UI URL and redeploy the API. Both projects can use the free Hobby plan for a demo.
+
+Limits that shaped the design (from Vercel docs, checked 2026-10): request/response body **4.5 MB** (so Photo A is downscaled in the browser
+to ≤1600 px before upload; Photo B never leaves the browser; the API rejects >4 MB with a clear error); function filesystem is read-only
+except per-instance `/tmp` (the API writes nothing it needs later in stateless mode); Python bundle limit 500 MB (a local `vercel` CLI build with Linux wheels measured **325 MB**, above the 250 MB
+"standard" size, so Vercel switches to *runtime dependency installation* - expect slower cold starts; not yet confirmed on the platform since no
+deployment was possible); 2 GB memory and 300 s default duration (a match takes ≈3-6 s; first request after idle also pays the
+import/cold-start cost).
+Consequences: closing the tab loses the session (the UI offers PNG/JPEG export; there is no server-side save); the 20 procedural arches
+are the only models (licence-clean). To add durable server-side sessions on Vercel you would need an external store (e.g. Vercel Blob for
+photos + a KV/Postgres for session JSON; both have free tiers but need an account and configuration) - not implemented.
+
+**Status of this deployment path:** configuration validated against Vercel's published `vercel.json` schema; the API runs locally with `VERCEL=1` from the repo
+root exactly as Vercel would start it, and the stateless UI was tested against it cross-origin (see the test notes in the project hand-off). **It has not been
+deployed to Vercel**: this environment has no Vercel login or token (`vercel whoami` → logged out) and an anonymous `vercel deploy --temporary` was rejected with
+"Not authorized". Run the steps above from an authenticated account.

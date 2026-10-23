@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "build": { "env": { "VITE_API_MODE": "stateless" } },
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
