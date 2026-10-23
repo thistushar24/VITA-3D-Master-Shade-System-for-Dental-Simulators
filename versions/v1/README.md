@@ -88,7 +88,7 @@ paid service is involved. The stateful API (`/api/v1/sessions…`, server-side s
 | | API project | UI project |
 |---|---|---|
 | Root Directory | repo root (`.`) | `versions/v1` |
-| Framework | FastAPI/Python (auto; `app.py` exposes `app`, `requirements.txt`, `.python-version` = 3.12) | Vite (auto; `versions/v1/vercel.json`) |
+| Framework | FastAPI/Python (auto; `api/app.py` exposes `app`, `requirements.txt`, `.python-version` = 3.12) | Vite (auto; `versions/v1/vercel.json`) |
 | Build | none (dependencies only) | `npm ci && npm run build` → `dist` |
 | Env vars | `DENTAL_CORS=https://<ui>.vercel.app` (and optionally `DENTAL_CORS_REGEX=https://<project>-.*\.vercel\.app` for previews) | `VITE_API_BASE=https://<api>.vercel.app` (no trailing slash). `VITE_API_MODE=stateless` is set by `vercel.json` |
 | Other setting | none | keep **"Include source files outside of the Root Directory in the Build Step"** enabled (shared code is in `frontend/src`) |
