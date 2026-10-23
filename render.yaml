@@ -1,0 +1,11 @@
+# Render Blueprint: one Docker web service serving the v1 UI and the API.
+services:
+  - type: web
+    name: dental-smile-sim-v1
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    plan: free
+    envVars:
+      - key: DENTAL_STORAGE
+        value: /tmp/dental-storage
