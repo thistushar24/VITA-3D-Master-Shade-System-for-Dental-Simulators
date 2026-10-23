@@ -9,3 +9,4 @@ versions/v1/dist/
 .env
 *.log
 private_data/
+.vercel

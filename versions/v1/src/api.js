@@ -2,7 +2,7 @@
 //   VITE_API_BASE  base URL of the backend ('' = same origin; set to the backend's URL when hosted separately, e.g. Vercel)
 //   VITE_API_MODE  'stateful' (default: server keeps sessions - local/Docker/Render) or 'stateless' (serverless: the browser
 //                  keeps the session; the server only computes - no durable storage needed)
-const BASE = import.meta.env.VITE_API_BASE || ''
+const BASE = import.meta.env.VITE_API_BASE || 'https://vita-3d-master-shade-system-for-den.vercel.app'
 export const STATELESS = import.meta.env.VITE_API_MODE === 'stateless'
 const MAX_UPLOAD_DIM = 1600 // px; keeps Photo A well under Vercel's 4.5 MB request body limit
 const MAX_UPLOAD_BYTES = 3.5 * 2 ** 20

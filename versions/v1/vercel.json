@@ -4,6 +4,11 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "build": { "env": { "VITE_API_MODE": "stateless" } },
+  "build": {
+    "env": {
+      "VITE_API_MODE": "stateless",
+      "VITE_API_BASE": "https://vita-3d-master-shade-system-for-den.vercel.app"
+    }
+  },
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
