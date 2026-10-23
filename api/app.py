@@ -5,6 +5,8 @@ Vercel runs from the project root and bundles reachable files; model assets are 
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "backend"))
+# Add backend directory to sys.path (parent of api/ is the project root)
+root = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(root / "backend"))
 
 from dental_reg.app import app  # noqa: E402,F401
