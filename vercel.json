@@ -1,9 +1,32 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd versions/v1 && npm ci && npm run build",
+  "outputDirectory": "versions/v1/dist",
+  "build": {
+    "env": {
+      "VITE_API_MODE": "stateless"
+    }
+  },
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "destination": "/api/app.py"
+    },
+    {
+      "source": "/api",
+      "destination": "/api/app.py"
+    },
+    {
+      "source": "/docs",
+      "destination": "/api/app.py"
+    },
+    {
+      "source": "/openapi.json",
+      "destination": "/api/app.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "functions": {
