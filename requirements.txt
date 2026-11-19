@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Runtime dependencies for the Vercel Python function (tests/uvicorn live in backend/requirements.txt)
 numpy==2.5.4
 scipy==1.18.1
@@ -7,3 +8,8 @@ fast-simplification==0.2.0
 fastapi==0.160.0
 starlette==1.9.0
 python-multipart==0.0.32
+=======
+open3d
+opencv-python
+numpy
+>>>>>>> 27b3809 (Add dental alignment tools and supporting files)
