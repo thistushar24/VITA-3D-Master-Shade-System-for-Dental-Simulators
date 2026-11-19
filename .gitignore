@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .venv/
 node_modules/
 __pycache__/
@@ -11,11 +10,3 @@ versions/v1/dist/
 *.log
 private_data/
 .vercel
-=======
-__pycache__/
-*.py[cod]
-dental_env/
-.venv/
-venv/
-.env
->>>>>>> 27b3809 (Add dental alignment tools and supporting files)
